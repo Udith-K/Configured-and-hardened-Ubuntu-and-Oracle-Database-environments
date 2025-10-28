@@ -1,0 +1,327 @@
+-- Create application owner user
+CREATE USER APP_OWNER IDENTIFIED BY "Doss@35doss"
+DEFAULT TABLESPACE app_data
+QUOTA UNLIMITED ON app_data
+PROFILE C##SECURE_APP_PROFILE;
+
+-- Grant basic privileges
+GRANT CONNECT, RESOURCE, CREATE VIEW TO APP_OWNER;
+
+-- Departments table
+CREATE TABLE APP_OWNER.departments (
+    department_id NUMBER PRIMARY KEY,
+    department_name VARCHAR2(100) NOT NULL,
+    manager_id NUMBER,
+    budget NUMBER(15,2),
+    location VARCHAR2(100),
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Employees table
+CREATE TABLE APP_OWNER.employees (
+    employee_id NUMBER PRIMARY KEY,
+    first_name VARCHAR2(50) NOT NULL,
+    last_name VARCHAR2(50) NOT NULL,
+    email VARCHAR2(100),
+    phone VARCHAR2(20),
+    address VARCHAR2(200),
+    ssn VARCHAR2(11),
+    date_of_birth DATE,
+    hire_date DATE,
+    salary NUMBER(10,2),
+    department_id NUMBER,
+    manager_id NUMBER,
+    job_title VARCHAR2(100),
+    employment_type VARCHAR2(20),
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Salaries table
+CREATE TABLE APP_OWNER.salaries (
+    salary_id NUMBER PRIMARY KEY,
+    employee_id NUMBER,
+    base_salary NUMBER(10,2),
+    bonus NUMBER(10,2),
+    benefits NUMBER(10,2),
+    effective_date DATE,
+    end_date DATE,
+    salary_grade VARCHAR2(20),
+    pay_frequency VARCHAR2(20),
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Performance Reviews table
+CREATE TABLE APP_OWNER.performance_reviews (
+    review_id NUMBER PRIMARY KEY,
+    employee_id NUMBER,
+    reviewer_id NUMBER,
+    review_date DATE,
+    rating NUMBER(2,1),
+    comments CLOB,
+    goals CLOB,
+    review_period VARCHAR2(20),
+    status VARCHAR2(20),
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Training Records table
+CREATE TABLE APP_OWNER.training_records (
+    training_id NUMBER PRIMARY KEY,
+    employee_id NUMBER,
+    course_name VARCHAR2(200),
+    training_type VARCHAR2(50),
+    completion_date DATE,
+    status VARCHAR2(20),
+    cost NUMBER(8,2),
+    notes CLOB,
+    certification_number VARCHAR2(100),
+    expiry_date DATE
+);
+
+-- Skills table
+CREATE TABLE APP_OWNER.skills (
+    skill_id NUMBER PRIMARY KEY,
+    skill_name VARCHAR2(100) NOT NULL,
+    category VARCHAR2(50),
+    description VARCHAR2(500),
+    proficiency_level VARCHAR2(20)
+);
+
+-- Employee Skills junction table
+CREATE TABLE APP_OWNER.employee_skills (
+    employee_id NUMBER,
+    skill_id NUMBER,
+    proficiency VARCHAR2(20),
+    date_acquired DATE,
+    certification VARCHAR2(100),
+    CONSTRAINT emp_skills_pk PRIMARY KEY (employee_id, skill_id)
+);
+
+-- Employee constraints
+ALTER TABLE APP_OWNER.employees ADD CONSTRAINT emp_department_fk 
+FOREIGN KEY (department_id) REFERENCES APP_OWNER.departments(department_id);
+
+ALTER TABLE APP_OWNER.employees ADD CONSTRAINT emp_manager_fk 
+FOREIGN KEY (manager_id) REFERENCES APP_OWNER.employees(employee_id);
+
+-- Salary constraints
+ALTER TABLE APP_OWNER.salaries ADD CONSTRAINT salary_employee_fk 
+FOREIGN KEY (employee_id) REFERENCES APP_OWNER.employees(employee_id);
+
+-- Performance Review constraints
+ALTER TABLE APP_OWNER.performance_reviews ADD CONSTRAINT review_employee_fk 
+FOREIGN KEY (employee_id) REFERENCES APP_OWNER.employees(employee_id);
+
+ALTER TABLE APP_OWNER.performance_reviews ADD CONSTRAINT review_reviewer_fk 
+FOREIGN KEY (reviewer_id) REFERENCES APP_OWNER.employees(employee_id);
+
+-- Training Records constraints
+ALTER TABLE APP_OWNER.training_records ADD CONSTRAINT training_employee_fk 
+FOREIGN KEY (employee_id) REFERENCES APP_OWNER.employees(employee_id);
+
+-- Employee Skills constraints
+ALTER TABLE APP_OWNER.employee_skills ADD CONSTRAINT emp_skills_emp_fk 
+FOREIGN KEY (employee_id) REFERENCES APP_OWNER.employees(employee_id);
+
+ALTER TABLE APP_OWNER.employee_skills ADD CONSTRAINT emp_skills_skill_fk 
+FOREIGN KEY (skill_id) REFERENCES APP_OWNER.skills(skill_id);
+
+-- Insert Departments
+INSERT INTO APP_OWNER.departments VALUES (1, 'Human Resources', 1, 10000000, 'Colombo', CURRENT_TIMESTAMP);
+INSERT INTO APP_OWNER.departments VALUES (2, 'Information Technology', 2, 15000000, 'Malabe', CURRENT_TIMESTAMP);
+INSERT INTO APP_OWNER.departments VALUES (3, 'Finance', 3, 12000000, 'Kandy', CURRENT_TIMESTAMP);
+INSERT INTO APP_OWNER.departments VALUES (4, 'Marketing', 4, 9000000, 'Galle', CURRENT_TIMESTAMP);
+INSERT INTO APP_OWNER.departments VALUES (5, 'Operations', 5, 11000000, 'Kurunegala', CURRENT_TIMESTAMP);
+
+-- Insert Employees
+INSERT INTO APP_OWNER.employees VALUES (1, 'Wtmat', 'Perera', 'ntmat_perera@lanka.lk', '077-1234567', '45 Galle Rd, Colombo 03', '750314123V', DATE '1975-03-15', DATE '2015-01-15', 4800000, 1, NULL, 'HR Director', 'Full-time', CURRENT_TIMESTAMP);
+INSERT INTO APP_OWNER.employees VALUES (2, 'Tharusht', 'Silva', 'tharusht.silva@lanka.lk', '071-2345678', '12 IT Park, Malabe', '802024213V', DATE '1980-07-22', DATE '2018-03-20', 4400000, 2, NULL, 'IT Manager', 'Full-time', CURRENT_TIMESTAMP);
+INSERT INTO APP_OWNER.employees VALUES (3, 'Saman', 'Bandara', 'saman.bandara@lanka.lk', '070-3456789', '78 Central Ave, Kandy', '783124567V', DATE '1978-11-08', DATE '2016-06-10', 4600000, 3, NULL, 'Finance Director', 'Full-time', CURRENT_TIMESTAMP);
+INSERT INTO APP_OWNER.employees VALUES (4, 'Prtya', 'Fernando', 'prtya.fernando@lanka.lk', '070-4567890', '32 Sea St, Galle', '821487654V', DATE '1982-05-28', DATE '2019-01-08', 3800000, 4, NULL, 'Marketing Manager', 'Full-time', CURRENT_TIMESTAMP);
+INSERT INTO APP_OWNER.employees VALUES (5, 'Ranjan', 'Canage', 'ranjan.ganage@lanka.lk', '078-5678991', '65 Lake Rd, Kurunegala', '723378912V', DATE '1972-12-03', DATE '2014-03-15', 4200000, 5, NULL, 'Operations Director', 'Full-time', CURRENT_TIMESTAMP);
+INSERT INTO APP_OWNER.employees VALUES (7, 'Dinesh', 'Ranaweera', 'dinesh.ranaweera@lanka.lk', '071-7890123', '14 HR Tower, Colombo 03', '900231234V', DATE '1990-01-25', DATE '2021-09-30', 3000000, 1, 1, 'HR Business Partner', 'Full-time', CURRENT_TIMESTAMP);
+INSERT INTO APP_OWNER.employees VALUES (8, 'Ayesha', 'Mickranasinghe', 'ayesha.micks@lanka.lk', '076-8901234', '25 Tech Hub, Malabe', '81023456V', DATE '1988-04-12', DATE '2022-01-10', 3400000, 2, 2, 'Senior Developer', 'Full-time', CURRENT_TIMESTAMP);
+INSERT INTO APP_OWNER.employees VALUES (9, 'Isuru', 'Jayasinghe', 'isuru.jaya@lanka.lk', '070-9012345', '36 Finance Rd, Kandy', '922206789V', DATE '1992-08-08', DATE '2023-03-15', 2800000, 3, 3, 'Financial Analyst', 'Full-time', CURRENT_TIMESTAMP);
+INSERT INTO APP_OWNER.employees VALUES (10, 'Shantka', 'Prtyadarshana', 'shantka.prtya@lanka.lk', '078-0123456', '74 Marketing Rd, Galle', '911649876V', DATE '1991-06-14', DATE '2022-11-05', 2600000, 4, 4, 'Marketing Specialist', 'Full-time', CURRENT_TIMESTAMP);
+
+-- Insert Skills
+INSERT INTO APP_OWNER.skills VALUES (1, 'Java Programming', 'Technical', 'Object-oriented programming in Java', 'Advanced');
+INSERT INTO APP_OWNER.skills VALUES (2, 'Python', 'Technical', 'Python development and scripting', 'Advanced');
+INSERT INTO APP_OWNER.skills VALUES (3, 'Project Management', 'Management', 'Agile and Waterfall methodologies', 'Expert');
+INSERT INTO APP_OWNER.skills VALUES (4, 'Financial Analysis', 'Finance', 'Financial modeling and analysis', 'Advanced');
+INSERT INTO APP_OWNER.skills VALUES (5, 'Digital Marketing', 'Marketing', 'SEO, SEM, and social media marketing', 'Advanced');
+INSERT INTO APP_OWNER.skills VALUES (6, 'HR Policies', 'HR', 'Employment law and policy development', 'Expert');
+INSERT INTO APP_OWNER.skills VALUES (7, 'SQL Database', 'Technical', 'Database design and query optimization', 'Advanced');
+INSERT INTO APP_OWNER.skills VALUES (8, 'Leadership', 'Soft Skills', 'Team leadership and people management', 'Expert');
+INSERT INTO APP_OWNER.skills VALUES (9, 'Communication', 'Soft Skills', 'Verbal and written communication', 'Advanced');
+INSERT INTO APP_OWNER.skills VALUES (10, 'Data Analysis', 'Analytical', 'Statistical analysis and data visualization', 'Intermediate');
+
+-- Insert Employee Skills
+INSERT INTO APP_OWNER.employee_skills VALUES (1, 6, 'Expert', DATE '2015-01-15', 'SHRM-CP');
+INSERT INTO APP_OWNER.employee_skills VALUES (2, 1, 'Advanced', DATE '2018-03-20', 'Java Professional');
+INSERT INTO APP_OWNER.employee_skills VALUES (3, 4, 'Advanced', DATE '2016-06-10', 'CFA Level II');
+INSERT INTO APP_OWNER.employee_skills VALUES (4, 5, 'Advanced', DATE '2019-01-08', 'Digital Marketing Cert');
+INSERT INTO APP_OWNER.employee_skills VALUES (5, 3, 'Advanced', DATE '2014-03-15', 'PMP');
+INSERT INTO APP_OWNER.employee_skills VALUES (7, 6, 'Advanced', DATE '2021-09-30', 'PMR');
+INSERT INTO APP_OWNER.employee_skills VALUES (8, 1, 'Advanced', DATE '2022-01-10', 'Java Architect');
+INSERT INTO APP_OWNER.employee_skills VALUES (9, 4, 'Intermediate', DATE '2023-03-15', null);
+INSERT INTO APP_OWNER.employee_skills VALUES (10, 5, 'Intermediate', DATE '2022-11-05', null);
+INSERT INTO APP_OWNER.employee_skills VALUES (11, 3, 'Intermediate', DATE '2021-08-19', null);
+
+-- Create roles
+CREATE ROLE SYSADMIN_ROLE;
+CREATE ROLE MANAGER_ROLE;
+CREATE ROLE EXECUTIVE_ROLE;
+
+-- Grant permissions to MANAGER_ROLE
+GRANT CREATE SESSION TO MANAGER_ROLE;
+GRANT SELECT ON APP_OWNER.departments TO MANAGER_ROLE;
+GRANT SELECT, INSERT, UPDATE ON APP_OWNER.employees TO MANAGER_ROLE;
+GRANT SELECT, INSERT, UPDATE ON APP_OWNER.salaries TO MANAGER_ROLE;
+GRANT SELECT, INSERT, UPDATE ON APP_OWNER.performance_reviews TO MANAGER_ROLE;
+GRANT SELECT, INSERT, UPDATE, DELETE ON APP_OWNER.training_records TO MANAGER_ROLE;
+GRANT SELECT, INSERT, UPDATE, DELETE ON APP_OWNER.skills TO MANAGER_ROLE;
+GRANT SELECT, INSERT, UPDATE, DELETE ON APP_OWNER.employee_skills TO MANAGER_ROLE;
+
+-- Grant permissions to EXECUTIVE_ROLE
+GRANT CREATE SESSION TO EXECUTIVE_ROLE;
+GRANT SELECT ON APP_OWNER.departments TO EXECUTIVE_ROLE;
+GRANT SELECT ON APP_OWNER.employees TO EXECUTIVE_ROLE;
+GRANT SELECT ON APP_OWNER.salaries TO EXECUTIVE_ROLE;
+GRANT SELECT ON APP_OWNER.performance_reviews TO EXECUTIVE_ROLE;
+GRANT SELECT ON APP_OWNER.training_records TO EXECUTIVE_ROLE;
+GRANT SELECT ON APP_OWNER.skills TO EXECUTIVE_ROLE;
+GRANT SELECT ON APP_OWNER.employee_skills TO EXECUTIVE_ROLE;
+
+-- Create manager view for employee salary details
+CREATE OR REPLACE VIEW APP_OWNER.manager_employee_salary_v AS
+SELECT
+    e.employee_id,
+    e.first_name,
+    e.last_name,
+    e.email,
+    e.phone,
+    e.department_id,
+    e.job_title,
+    s.base_salary,
+    s.bonus,
+    s.benefits,
+    s.effective_date,
+    s.salary_grade
+FROM APP_OWNER.employees e
+JOIN APP_OWNER.salaries s ON e.employee_id = s.employee_id;
+
+-- Grant view access to manager role
+GRANT SELECT ON APP_OWNER.manager_employee_salary_v TO MANAGER_ROLE;
+
+-- Create VPD policy function
+CREATE OR REPLACE FUNCTION APP_OWNER.manager_vpd_policy
+(schema_name IN VARCHAR2, table_name IN VARCHAR2)
+RETURN VARCHAR2
+AS
+    v_dept_id APP_OWNER.employees.department_id%TYPE;
+    v_predicate VARCHAR2(200);
+BEGIN
+    IF SYS_CONTEXT('USERENV', 'SESSION_USER') IN ('SYS', 'SYSTEM') THEN
+        RETURN '1=1';
+    END IF;
+    
+    BEGIN
+        SELECT department_id INTO v_dept_id
+        FROM APP_OWNER.employees e
+        WHERE e.employee_id = (
+            SELECT manager_id FROM APP_OWNER.departments WHERE ROWNUM = 1
+        );
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN '1=0';
+    END;
+    
+    v_predicate := 'department_id = ' || v_dept_id;
+    RETURN v_predicate;
+END;
+/
+
+-- Apply VPD policy to employees table
+BEGIN
+    DBMS_RLS.ADD_POLICY (
+        object_schema => 'APP_OWNER',
+        object_name => 'EMPLOYEES',
+        policy_name => 'manager_dept_vpd_policy',
+        function_schema => 'APP_OWNER',
+        policy_function => 'manager_vpd_policy',
+        statement_types => 'SELECT',
+        sec_relevant_cols => 'DEPARTMENT_ID',
+        policy_type => DBMS_RLS.DYNAMIC
+    );
+END;
+/
+
+-- Encrypt sensitive columns
+ALTER TABLE APP_OWNER.employees 
+MODIFY (ssn ENCRYPT USING 'AES256' NO SALT);
+
+ALTER TABLE APP_OWNER.salaries 
+MODIFY (base_salary ENCRYPT USING 'AES256');
+
+-- Apply data redaction policy to email column
+BEGIN
+    DBMS_REDACT.ADD_POLICY (
+        object_schema => 'APP_OWNER',
+        object_name => 'EMPLOYEES',
+        policy_name => 'redact_employee_email',
+        expression => '1=1',
+        column_name => 'EMAIL',
+        function_type => DBMS_REDACT.FULL,
+        function_parameters => NULL
+    );
+END;
+/
+
+-- FGA policy for SSN access monitoring
+BEGIN
+    DBMS_FGA.ADD_POLICY (
+        object_schema => 'APP_OWNER',
+        object_name => 'EMPLOYEES',
+        policy_name => 'audit_ssn_access',
+        audit_condition => '1=1',
+        audit_column => 'SSN',
+        enable => TRUE
+    );
+END;
+/
+
+-- FGA policy for salary access monitoring
+BEGIN
+    DBMS_FGA.ADD_POLICY (
+        object_schema => 'APP_OWNER',
+        object_name => 'SALARIES',
+        policy_name => 'audit_salary_access',
+        audit_condition => '1=1',
+        audit_column => 'BASE_SALARY',
+        enable => TRUE
+    );
+END;
+/
+
+-- Verify encrypted columns
+SELECT TABLE_NAME, COLUMN_NAME, ENCRYPTION_ALG
+FROM DBA_ENCRYPTED_COLUMNS
+WHERE OWNER = 'APP_OWNER'
+AND COLUMN_NAME IN ('SSN', 'BASE_SALARY');
+
+-- Verify FGA policies
+SELECT OBJECT_NAME, POLICY_NAME
+FROM DBA_AUDIT_POLICIES
+WHERE OBJECT_SCHEMA = 'APP_OWNER';
+
+-- Verify roles
+SELECT ROLE FROM DBA_ROLES 
+WHERE ROLE IN ('SYSADMIN_ROLE', 'MANAGER_ROLE', 'EXECUTIVE_ROLE');
+
+-- Verify view creation
+SELECT VIEW_NAME, OWNER
+FROM DBA_VIEWS
+WHERE VIEW_NAME = 'MANAGER_EMPLOYEE_SALARY_V' AND OWNER = 'APP_OWNER';
+
+COMMIT;
