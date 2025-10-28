@@ -1,0 +1,2 @@
+# Configured-and-hardened-Ubuntu-and-Oracle-Database-environments
+Collaborated with a team to design and implement comprehensive security measures for both operating systems and databases. Configured and hardened Ubuntu Server and Oracle Database, applying best practices in user access control, password policy enforcement, auditing, encryption, firewall configuration, and virtual private database (VPD) setup.
